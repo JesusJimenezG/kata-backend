@@ -66,7 +66,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content)
     })
     public ResponseEntity<Map<String, String>> logout(
-            @Parameter(description = "Authenticated user details") @AuthenticationPrincipal UserDetails userDetails) {
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
         authService.logout(userDetails.getUsername());
         return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
