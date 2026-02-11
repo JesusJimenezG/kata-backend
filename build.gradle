@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'dev.jesusjimenezg'
-version = '1.1.0'
+version = '1.1.1'
 description = 'Resource Management and Reservation Platform'
 
 java {
