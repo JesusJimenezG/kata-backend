@@ -125,10 +125,12 @@ CREATE TABLE reservation (
 
 -- Prevent overlapping ACTIVE reservations for the same resource at database level
 -- Uses tsrange + GiST exclusion constraint
-CREATE EXCLUDE USING gist (
-    resource_id WITH =,
-    tsrange(start_time, end_time, '[)') WITH &&
-) WHERE (status = 'ACTIVE');
+ALTER TABLE reservation
+    ADD CONSTRAINT excl_reservation_overlap
+    EXCLUDE USING gist (
+        resource_id WITH =,
+        tsrange(start_time, end_time, '[)') WITH &&
+    ) WHERE (status = 'ACTIVE');
 
 CREATE INDEX idx_reservation_resource ON reservation(resource_id);
 CREATE INDEX idx_reservation_user     ON reservation(user_id);

@@ -10,7 +10,7 @@ FROM base AS dev
 RUN ./gradlew dependencies
 COPY src src
 EXPOSE 8080
-CMD ["./gradlew", "bootRun"]
+CMD ["./gradlew", "bootRun", "--continuous"]
 
 FROM base AS build
 COPY src src

@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: 'postgres:latest'
+    image: 'postgres:16-alpine'
     env_file:
       - .env
     environment:
@@ -28,6 +28,8 @@ services:
       - 'SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}'
     ports:
       - '${APP_PORT}:8080'
+    volumes:
+      - .:/workspace
     depends_on:
       postgres:
         condition: service_healthy
