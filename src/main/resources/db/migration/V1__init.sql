@@ -1,0 +1,2 @@
+-- Initial schema migration
+-- Add your table definitions here as the project evolves.

@@ -13,7 +13,8 @@ If rules conflict, use this precedence: FUNCTIONAL_REQUIREMENTS (product semanti
 ## Project snapshot (for quick orientation)
 
 - Spring Boot 4.0.2, Java 21, Gradle; entry point: [src/main/java/dev/jesusjimenezg/kata/KataApplication.java](src/main/java/dev/jesusjimenezg/kata/KataApplication.java)
-- Persistence: Spring Data JDBC (no JPA/Hibernate)
+- Persistence: Spring Data JPA (Hibernate)
+- Schema migrations: Flyway (SQL scripts in `src/main/resources/db/migration/`)
 - Runtime DB: Postgres via [compose.yaml](compose.yaml)
 - Config: [src/main/resources/application.yaml](src/main/resources/application.yaml)
 
