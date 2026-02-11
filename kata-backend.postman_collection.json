@@ -1,0 +1,716 @@
+{
+    "info": {
+        "name": "Kata – Resource Management & Reservation Platform",
+        "description": "API collection for the kata-backend Spring Boot application.\n\nSetup:\n1. Register or login to get tokens.\n2. The access token is automatically stored in the `accessToken` collection variable.\n3. All authenticated requests use it via the Bearer auth helper.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8080",
+            "type": "string"
+        },
+        {
+            "key": "accessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "refreshToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "resourceTypeId",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "resourceId",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "reservationId",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{accessToken}}",
+                "type": "string"
+            }
+        ]
+    },
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Register",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.collectionVariables.set('accessToken', json.accessToken);",
+                                    "    pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Secret123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Creates a new user account and returns access/refresh tokens."
+                    }
+                },
+                {
+                    "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.collectionVariables.set('accessToken', json.accessToken);",
+                                    "    pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Secret123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Authenticates credentials and returns access/refresh tokens."
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/logout",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "logout"
+                            ]
+                        },
+                        "description": "Revokes all refresh tokens for the authenticated user."
+                    }
+                },
+                {
+                    "name": "Refresh Token",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.collectionVariables.set('accessToken', json.accessToken);",
+                                    "    pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/refresh",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "refresh"
+                            ]
+                        },
+                        "description": "Rotates the refresh token and issues a new access token."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Resource Types",
+            "item": [
+                {
+                    "name": "List all",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resource-types",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resource-types"
+                            ]
+                        },
+                        "description": "Returns all resource types."
+                    }
+                },
+                {
+                    "name": "Get by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resource-types/{{resourceTypeId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resource-types",
+                                "{{resourceTypeId}}"
+                            ]
+                        },
+                        "description": "Returns a single resource type by its ID."
+                    }
+                },
+                {
+                    "name": "Create (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.collectionVariables.set('resourceTypeId', json.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Meeting Room\",\n  \"description\": \"Conference and meeting rooms\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resource-types",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resource-types"
+                            ]
+                        },
+                        "description": "Creates a new resource type. Requires ADMIN role."
+                    }
+                },
+                {
+                    "name": "Update (Admin)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Meeting Room (updated)\",\n  \"description\": \"Updated description\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resource-types/{{resourceTypeId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resource-types",
+                                "{{resourceTypeId}}"
+                            ]
+                        },
+                        "description": "Updates an existing resource type. Requires ADMIN role."
+                    }
+                },
+                {
+                    "name": "Delete (Admin)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resource-types/{{resourceTypeId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resource-types",
+                                "{{resourceTypeId}}"
+                            ]
+                        },
+                        "description": "Deletes a resource type. Requires ADMIN role."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Resources",
+            "item": [
+                {
+                    "name": "List all",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources"
+                            ]
+                        },
+                        "description": "Lists all resources."
+                    }
+                },
+                {
+                    "name": "List active",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources?active=true",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources"
+                            ],
+                            "query": [
+                                {
+                                    "key": "active",
+                                    "value": "true"
+                                }
+                            ]
+                        },
+                        "description": "Lists only active resources."
+                    }
+                },
+                {
+                    "name": "List by type",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources?typeId={{resourceTypeId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources"
+                            ],
+                            "query": [
+                                {
+                                    "key": "typeId",
+                                    "value": "{{resourceTypeId}}"
+                                }
+                            ]
+                        },
+                        "description": "Lists resources filtered by resource type."
+                    }
+                },
+                {
+                    "name": "Get by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources/{{resourceId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources",
+                                "{{resourceId}}"
+                            ]
+                        },
+                        "description": "Returns a single resource by its ID."
+                    }
+                },
+                {
+                    "name": "Create (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.collectionVariables.set('resourceId', json.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Room A-101\",\n  \"description\": \"10-person meeting room\",\n  \"resourceTypeId\": {{resourceTypeId}},\n  \"location\": \"Building A, Floor 1\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources"
+                            ]
+                        },
+                        "description": "Creates a new resource. Requires ADMIN role."
+                    }
+                },
+                {
+                    "name": "Update (Admin)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Room A-101 (updated)\",\n  \"description\": \"Updated meeting room\",\n  \"resourceTypeId\": {{resourceTypeId}},\n  \"location\": \"Building A, Floor 2\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources/{{resourceId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources",
+                                "{{resourceId}}"
+                            ]
+                        },
+                        "description": "Updates an existing resource. Requires ADMIN role."
+                    }
+                },
+                {
+                    "name": "Delete (Admin)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources/{{resourceId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources",
+                                "{{resourceId}}"
+                            ]
+                        },
+                        "description": "Soft-deletes (deactivates) a resource. Requires ADMIN role."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Reservations",
+            "item": [
+                {
+                    "name": "Create reservation",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.collectionVariables.set('reservationId', json.id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"resourceId\": \"{{resourceId}}\",\n  \"startTime\": \"2026-02-12T09:00:00\",\n  \"endTime\": \"2026-02-12T10:00:00\",\n  \"notes\": \"Team standup\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reservations",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reservations"
+                            ]
+                        },
+                        "description": "Creates a new reservation for a resource. Prevents overlapping active reservations."
+                    }
+                },
+                {
+                    "name": "Get by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reservations/{{reservationId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reservations",
+                                "{{reservationId}}"
+                            ]
+                        },
+                        "description": "Returns details of a specific reservation."
+                    }
+                },
+                {
+                    "name": "List all active",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reservations/active",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reservations",
+                                "active"
+                            ]
+                        },
+                        "description": "Lists all currently active reservations."
+                    }
+                },
+                {
+                    "name": "My active reservations",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reservations/my",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reservations",
+                                "my"
+                            ]
+                        },
+                        "description": "Lists the current user's active reservations."
+                    }
+                },
+                {
+                    "name": "My reservation history",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reservations/my/history",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reservations",
+                                "my",
+                                "history"
+                            ]
+                        },
+                        "description": "Lists the current user's full reservation history."
+                    }
+                },
+                {
+                    "name": "Resource reservation history",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reservations/resource/{{resourceId}}/history",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reservations",
+                                "resource",
+                                "{{resourceId}}",
+                                "history"
+                            ]
+                        },
+                        "description": "Lists the full reservation history for a specific resource."
+                    }
+                },
+                {
+                    "name": "Resource availability",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reservations/resource/{{resourceId}}/availability?start=2026-02-12T00:00:00&end=2026-02-13T00:00:00",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reservations",
+                                "resource",
+                                "{{resourceId}}",
+                                "availability"
+                            ],
+                            "query": [
+                                {
+                                    "key": "start",
+                                    "value": "2026-02-12T00:00:00"
+                                },
+                                {
+                                    "key": "end",
+                                    "value": "2026-02-13T00:00:00"
+                                }
+                            ]
+                        },
+                        "description": "Returns available and reserved time slots for a resource within a time window."
+                    }
+                },
+                {
+                    "name": "Cancel reservation",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/reservations/{{reservationId}}/cancel",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "reservations",
+                                "{{reservationId}}",
+                                "cancel"
+                            ]
+                        },
+                        "description": "Cancels a reservation. Only the creator or an admin can cancel."
+                    }
+                }
+            ]
+        }
+    ]
+}
