@@ -1,7 +1,7 @@
 {
     "info": {
         "name": "Kata – Resource Management & Reservation Platform",
-        "description": "API collection for the kata-backend Spring Boot application.\n\nSetup:\n1. Register or login to get tokens.\n2. The access token is automatically stored in the `accessToken` collection variable.\n3. All authenticated requests use it via the Bearer auth helper.",
+        "description": "API collection for the kata-backend Spring Boot application.\n\nSetup:\n1. Register or login to get tokens (Admin and User requests are provided).\n2. Admin tokens are stored in `accessToken` (and `adminAccessToken`) for general use.\n3. User tokens are stored in `userAccessToken` for RBAC error examples.\n4. All authenticated requests use the collection Bearer auth unless overridden.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "variable": [
@@ -17,6 +17,26 @@
         },
         {
             "key": "refreshToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "adminAccessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "adminRefreshToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "userAccessToken",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "userRefreshToken",
             "value": "",
             "type": "string"
         },
@@ -51,7 +71,7 @@
             "name": "Auth",
             "item": [
                 {
-                    "name": "Register",
+                    "name": "Register Admin",
                     "event": [
                         {
                             "listen": "test",
@@ -62,6 +82,8 @@
                                     "    var json = pm.response.json();",
                                     "    pm.collectionVariables.set('accessToken', json.accessToken);",
                                     "    pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                                    "    pm.collectionVariables.set('adminAccessToken', json.accessToken);",
+                                    "    pm.collectionVariables.set('adminRefreshToken', json.refreshToken);",
                                     "}"
                                 ]
                             }
@@ -80,7 +102,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Secret123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\"\n}"
+                            "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Secret123!\",\n  \"firstName\": \"Admin\",\n  \"lastName\": \"User\",\n  \"role\": \"ADMIN\"\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/api/auth/register",
@@ -93,11 +115,11 @@
                                 "register"
                             ]
                         },
-                        "description": "Creates a new user account and returns access/refresh tokens."
+                        "description": "Creates an ADMIN account and returns access/refresh tokens."
                     }
                 },
                 {
-                    "name": "Login",
+                    "name": "Login Admin",
                     "event": [
                         {
                             "listen": "test",
@@ -108,6 +130,100 @@
                                     "    var json = pm.response.json();",
                                     "    pm.collectionVariables.set('accessToken', json.accessToken);",
                                     "    pm.collectionVariables.set('refreshToken', json.refreshToken);",
+                                    "    pm.collectionVariables.set('adminAccessToken', json.accessToken);",
+                                    "    pm.collectionVariables.set('adminRefreshToken', json.refreshToken);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Secret123!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "login"
+                            ]
+                        },
+                        "description": "Authenticates ADMIN credentials and returns access/refresh tokens."
+                    }
+                },
+                {
+                    "name": "Register User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.collectionVariables.set('userAccessToken', json.accessToken);",
+                                    "    pm.collectionVariables.set('userRefreshToken', json.refreshToken);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"Secret123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"role\": \"USER\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "auth",
+                                "register"
+                            ]
+                        },
+                        "description": "Creates a USER account and stores tokens in user variables."
+                    }
+                },
+                {
+                    "name": "Login User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var json = pm.response.json();",
+                                    "    pm.collectionVariables.set('userAccessToken', json.accessToken);",
+                                    "    pm.collectionVariables.set('userRefreshToken', json.refreshToken);",
                                     "}"
                                 ]
                             }
@@ -139,7 +255,7 @@
                                 "login"
                             ]
                         },
-                        "description": "Authenticates credentials and returns access/refresh tokens."
+                        "description": "Authenticates USER credentials and stores tokens in user variables."
                     }
                 },
                 {
@@ -708,6 +824,103 @@
                             ]
                         },
                         "description": "Cancels a reservation. Only the creator or an admin can cancel."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Errors (RBAC & Security)",
+            "item": [
+                {
+                    "name": "Unauthorized - List resources",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources"
+                            ]
+                        },
+                        "description": "Expected 401 when calling a protected endpoint without a token."
+                    }
+                },
+                {
+                    "name": "Forbidden - Create resource type (USER role)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Restricted Type\",\n  \"description\": \"Should fail for USER role\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resource-types",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resource-types"
+                            ]
+                        },
+                        "description": "Expected 403 for ADMIN-only endpoints when using a USER token."
+                    }
+                },
+                {
+                    "name": "Forbidden - List VIP resources by type (USER role)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{userAccessToken}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources?typeId=3",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources"
+                            ],
+                            "query": [
+                                {
+                                    "key": "typeId",
+                                    "value": "3"
+                                }
+                            ]
+                        },
+                        "description": "Expected 403 when requesting a resource type outside the USER permission set (VIP_ROOM id = 3)."
                     }
                 }
             ]
