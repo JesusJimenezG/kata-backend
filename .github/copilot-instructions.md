@@ -4,7 +4,7 @@
 
 This repo keeps detailed, task-specific rules in [.github/instructions](.github/instructions). When working as an agent, **read and follow these files**:
 
-1. Always apply: [.github/instructions/GENERAL.md](.github/instructions/GENERAL.md)
+1. Always apply: [.github/instructions/GENERAL.md](.github/instructions/GENERAL.md) and [.github/instructions/AI_USAGE.md](.github/instructions/AI_USAGE.md)
 2. When making code changes that affect repo history (almost always): [.github/instructions/GIT.md](.github/instructions/GIT.md)
 3. When implementing product behavior/endpoints for the “Resource Management and Reservation Platform”: [.github/instructions/FUNCTIONAL_REQUIREMENTS.md](.github/instructions/FUNCTIONAL_REQUIREMENTS.md)
 
