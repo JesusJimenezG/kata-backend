@@ -129,7 +129,6 @@ public class AuthService {
                         .map(role -> new org.springframework.security.core.authority.SimpleGrantedAuthority(
                                 "ROLE_" + role.getName()))
                         .toList());
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
         // Build response using the user directly (no re-auth needed)
         String accessToken = jwtService.generateAccessToken(
