@@ -4,6 +4,7 @@
 
 - Simple workflow: always commit directly to `main` (no feature branches).
 - Create commits after a track/task is completed (avoid “half-done” commits).
+- When the prompt is "run git commands", ask for a quick description of AI usage for the task being committed. If no entry is needed, the following prompt is "no entry" and continue with the git workflow.
 
 ## Best practices
 
