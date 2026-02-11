@@ -20,6 +20,29 @@ Endpoints marked 🔒 **ADMIN** additionally require the `ROLE_ADMIN` role.
 
 ---
 
+## Role-Based Access Control (RBAC)
+
+The platform filters all resource-related data (visibility and reservations) based on the roles assigned to the user. These roles are included in the `roles` claim of the JWT access token.
+
+### Permission Matrix
+
+| Role                      | Allowed Resource Types                                                      |
+| :------------------------ | :-------------------------------------------------------------------------- |
+| `ROLE_USER`               | `ROOM`                                                                      |
+| `ROLE_EMPLOYEE`           | `ROOM`, `CONFERENCE_ROOM`, `SHARED_TECH_EQUIPMENT`, `BILL_COUNTING_MACHINE` |
+| `ROLE_MANAGER`            | All Employee types + `VIP_ROOM`                                             |
+| `ROLE_HEAD_OF_OPERATIONS` | All types (Manager + `CORPORATE_VEHICLE`)                                   |
+| `ROLE_ADMIN`              | All types                                                                   |
+
+### Rules
+
+1. **Visibility**: Listing endpoints (`/api/resources`, `/api/resource-types`) and details (`/api/resources/{id}`) only return items for which the user has permission.
+2. **Reservation**: Users can only create reservations for allowed resource types.
+3. **Availability**: Availability slots are only visible for allowed resources.
+4. **Admin Ops**: Endpoint modification (POST/PUT/DELETE on types/resources) is restricted to `ROLE_ADMIN`.
+
+---
+
 ## Error responses
 
 All errors follow the same shape:
@@ -46,19 +69,21 @@ All errors follow the same shape:
 
 **Request body**
 
-| Field       | Type   | Required | Description |
-| ----------- | ------ | -------- | ----------- |
-| `email`     | string | ✅       | User email  |
-| `password`  | string | ✅       | Password    |
-| `firstName` | string | ✅       | First name  |
-| `lastName`  | string | ✅       | Last name   |
+| Field       | Type   | Required | Description                                                                      |
+| ----------- | ------ | -------- | -------------------------------------------------------------------------------- |
+| `email`     | string | ✅       | User email                                                                       |
+| `password`  | string | ✅       | Password                                                                         |
+| `firstName` | string | ✅       | First name                                                                       |
+| `lastName`  | string | ✅       | Last name                                                                        |
+| `role`      | string | ❌       | Role name (`USER`, `EMPLOYEE`, `MANAGER`, `HEAD_OF_OPERATIONS`, `ADMIN`). Defaults to `USER` |
 
 ```json
 {
   "email": "user@example.com",
   "password": "Secret123!",
   "firstName": "John",
-  "lastName": "Doe"
+  "lastName": "Doe",
+  "role": "EMPLOYEE"
 }
 ```
 

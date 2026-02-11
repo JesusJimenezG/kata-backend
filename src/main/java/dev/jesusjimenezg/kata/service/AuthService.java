@@ -64,8 +64,12 @@ public class AuthService {
             throw new IllegalArgumentException("Email already registered: " + request.email());
         }
 
-        Role userRole = roleRepository.findByName(DEFAULT_ROLE)
-                .orElseThrow(() -> new IllegalStateException("Default role not found: " + DEFAULT_ROLE));
+        String roleName = (request.role() != null && !request.role().isBlank())
+                ? request.role().toUpperCase()
+                : DEFAULT_ROLE;
+
+        Role userRole = roleRepository.findByName(roleName)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid role: " + roleName));
 
         AppUser user = new AppUser();
         user.setEmail(request.email());
