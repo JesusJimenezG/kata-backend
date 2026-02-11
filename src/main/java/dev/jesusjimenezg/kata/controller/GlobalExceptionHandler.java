@@ -2,10 +2,12 @@ package dev.jesusjimenezg.kata.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.hibernate.exception.ConstraintViolationException;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -36,6 +38,17 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, Object>> handleBadCredentials(BadCredentialsException ex) {
         return buildResponse(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String message = "Data integrity violation";
+        Throwable cause = ex.getCause();
+        if (cause instanceof ConstraintViolationException constraint
+                && "uq_resource_name".equals(constraint.getConstraintName())) {
+            message = "Resource name already exists";
+        }
+        return buildResponse(HttpStatus.CONFLICT, message);
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message) {

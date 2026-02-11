@@ -91,6 +91,7 @@ public class ResourceController {
             @ApiResponse(responseCode = "200", description = "Updated", content = @Content(schema = @Schema(implementation = ResourceResponse.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "403", description = "Forbidden (Admin only)", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Duplicate name", content = @Content),
             @ApiResponse(responseCode = "404", description = "Not found", content = @Content)
     })
     public ResponseEntity<ResourceResponse> update(

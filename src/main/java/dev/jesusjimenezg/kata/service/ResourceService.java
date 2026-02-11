@@ -66,7 +66,7 @@ public class ResourceService {
     @Transactional
     public ResourceResponse create(ResourceRequest request) {
         if (resourceRepository.existsByName(request.name())) {
-            throw new IllegalArgumentException("Resource name already exists: " + request.name());
+            throw new IllegalStateException("Resource name already exists: " + request.name());
         }
 
         ResourceType type = resourceTypeRepository.findById(request.resourceTypeId())
@@ -88,7 +88,7 @@ public class ResourceService {
 
         // Check name uniqueness if changing
         if (!resource.getName().equals(request.name()) && resourceRepository.existsByName(request.name())) {
-            throw new IllegalArgumentException("Resource name already exists: " + request.name());
+            throw new IllegalStateException("Resource name already exists: " + request.name());
         }
 
         ResourceType type = resourceTypeRepository.findById(request.resourceTypeId())
