@@ -673,3 +673,162 @@ Example: `/api/reservations/resource/{id}/availability?start=2026-02-12T00:00:00
   "available": false
 }
 ```
+
+---
+
+## 5. Users (`/api/users`) 🔒 ADMIN
+
+All user management endpoints require **ADMIN** role.
+
+### 5.1 List all
+
+|          |              |
+| -------- | ------------ |
+| **GET**  | `/api/users` |
+| **Auth** | Bearer token (ADMIN) |
+
+**Responses**
+
+| Code | Description     | Body             |
+| ---- | --------------- | ---------------- |
+| 200  | Users retrieved | `UserResponse[]` |
+| 403  | Forbidden       | Error            |
+
+---
+
+### 5.2 Get by ID
+
+|          |                   |
+| -------- | ----------------- |
+| **GET**  | `/api/users/{id}` |
+| **Auth** | Bearer token (ADMIN) |
+
+**Path parameters**
+
+| Param | Type | Description |
+| ----- | ---- | ----------- |
+| `id`  | UUID | User ID     |
+
+**Responses**
+
+| Code | Description | Body           |
+| ---- | ----------- | -------------- |
+| 200  | Found       | `UserResponse` |
+| 403  | Forbidden   | Error          |
+| 404  | Not found   | Error          |
+
+---
+
+### 5.3 Create
+
+|          |              |
+| -------- | ------------ |
+| **POST** | `/api/users` |
+| **Auth** | Bearer token (ADMIN) |
+
+**Request body**
+
+| Field       | Type     | Required | Description                                     |
+| ----------- | -------- | -------- | ----------------------------------------------- |
+| `email`     | string   | ✅       | User email                                      |
+| `password`  | string   | ✅       | Password                                        |
+| `firstName` | string   | ✅       | First name                                      |
+| `lastName`  | string   | ✅       | Last name                                       |
+| `roles`     | string[] | ❌       | List of roles. Defaults to `["USER"]` if empty. |
+
+```json
+{
+  "email": "admin-managed@example.com",
+  "password": "Password123!",
+  "firstName": "Management",
+  "lastName": "User",
+  "roles": ["MANAGER", "USER"]
+}
+```
+
+**Responses**
+
+| Code | Description              | Body           |
+| ---- | ------------------------ | -------------- |
+| 201  | User created             | `UserResponse` |
+| 400  | Invalid request          | Error          |
+| 403  | Forbidden       | Error            |
+| 409  | Email already registered | Error          |
+
+---
+
+### 5.4 Update (partial)
+
+|           |                   |
+| --------- | ----------------- |
+| **PATCH** | `/api/users/{id}` |
+| **Auth**  | Bearer token (ADMIN) |
+
+**Path parameters**
+
+| Param | Type | Description |
+| ----- | ---- | ----------- |
+| `id`  | UUID | User ID     |
+
+**Request body**
+
+| Field       | Type     | Required | Description                      |
+| ----------- | -------- | -------- | -------------------------------- |
+| `firstName` | string   | ❌       | New first name                   |
+| `lastName`  | string   | ❌       | New last name                    |
+| `roles`     | string[] | ❌       | New roles (replaces existing)    |
+| `enabled`   | boolean  | ❌       | Enable or disable user account   |
+
+```json
+{
+  "firstName": "UpdatedFirstName",
+  "roles": ["ADMIN", "USER"],
+  "enabled": true
+}
+```
+
+**Responses**
+
+| Code | Description     | Body           |
+| ---- | --------------- | -------------- |
+| 200  | User updated    | `UserResponse` |
+| 400  | Invalid request | Error          |
+| 403  | Forbidden       | Error            |
+| 404  | User not found  | Error          |
+
+---
+
+### 5.5 Delete (soft)
+
+|            |                   |
+| ---------- | ----------------- |
+| **DELETE** | `/api/users/{id}` |
+| **Auth**   | Bearer token (ADMIN) |
+
+Marks the user as `enabled = false`.
+
+**Responses**
+
+| Code | Description           | Body    |
+| ---- | --------------------- | ------- |
+| 204  | Deleted (deactivated) | _empty_ |
+| 403  | Forbidden             | Error   |
+| 404  | Not found             | Error   |
+
+---
+
+### UserResponse shape
+
+```json
+{
+  "id": "e5f6a7b8-...",
+  "email": "user@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "enabled": true,
+  "roles": ["USER", "MANAGER"],
+  "createdAt": "2026-02-11T10:00:00",
+  "updatedAt": "2026-02-11T10:00:00"
+}
+```
+
