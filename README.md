@@ -9,3 +9,4 @@
 - 2026-02-11: Se utilizó la IA para inicializar la configuración de seguridad (autenticación y autorización), controladores y servicios de autenticación con JWT.
 - 2026-02-11: Se utilizó la IA para documentar los endpoints de autenticación en Swagger/OpenAPI con descripciones detalladas y esquemas de respuesta.
 - 2026-02-11: Se utilizó IA para generar todo el boilerplate CRUD de Recursos y Reservas (DTOs, Servicios, Controladores).
+- 2026-02-11: Se utilizó la IA para generar el script de migración con datos de prueba (mock data).
