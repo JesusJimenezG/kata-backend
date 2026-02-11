@@ -525,6 +525,62 @@
                     }
                 },
                 {
+                    "name": "Search resources",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources?search=room",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources"
+                            ],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "room"
+                                }
+                            ]
+                        },
+                        "description": "Searches resources by text (case-insensitive match across name, description, and location)."
+                    }
+                },
+                {
+                    "name": "Search with filters",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/resources?search=room&active=true&typeId={{resourceTypeId}}",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "resources"
+                            ],
+                            "query": [
+                                {
+                                    "key": "search",
+                                    "value": "room"
+                                },
+                                {
+                                    "key": "active",
+                                    "value": "true"
+                                },
+                                {
+                                    "key": "typeId",
+                                    "value": "{{resourceTypeId}}"
+                                }
+                            ]
+                        },
+                        "description": "Combines text search with active and type filters (all optional, AND logic)."
+                    }
+                },
+                {
                     "name": "Get by ID",
                     "request": {
                         "method": "GET",

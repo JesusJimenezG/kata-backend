@@ -69,12 +69,12 @@ All errors follow the same shape:
 
 **Request body**
 
-| Field       | Type   | Required | Description                                                                      |
-| ----------- | ------ | -------- | -------------------------------------------------------------------------------- |
-| `email`     | string | ✅       | User email                                                                       |
-| `password`  | string | ✅       | Password                                                                         |
-| `firstName` | string | ✅       | First name                                                                       |
-| `lastName`  | string | ✅       | Last name                                                                        |
+| Field       | Type   | Required | Description                                                                                  |
+| ----------- | ------ | -------- | -------------------------------------------------------------------------------------------- |
+| `email`     | string | ✅       | User email                                                                                   |
+| `password`  | string | ✅       | Password                                                                                     |
+| `firstName` | string | ✅       | First name                                                                                   |
+| `lastName`  | string | ✅       | Last name                                                                                    |
 | `role`      | string | ❌       | Role name (`USER`, `EMPLOYEE`, `MANAGER`, `HEAD_OF_OPERATIONS`, `ADMIN`). Defaults to `USER` |
 
 ```json
@@ -321,10 +321,15 @@ All errors follow the same shape:
 
 **Query parameters**
 
-| Param    | Type    | Required | Description                              |
-| -------- | ------- | -------- | ---------------------------------------- |
-| `active` | boolean | ❌       | Filter by active status (`true`/`false`) |
-| `typeId` | integer | ❌       | Filter by resource type ID               |
+All parameters are optional and composable — they are combined with AND logic.
+
+| Param    | Type    | Required | Description                                                               |
+| -------- | ------- | -------- | ------------------------------------------------------------------------- |
+| `search` | string  | ❌       | Case-insensitive text search across `name`, `description`, and `location` |
+| `active` | boolean | ❌       | Filter by active status (`true`/`false`)                                  |
+| `typeId` | integer | ❌       | Filter by resource type ID                                                |
+
+**Example:** `GET /api/resources?search=sala&active=true&typeId=2`
 
 **Responses**
 

@@ -42,19 +42,14 @@ public class ResourceController {
     }
 
     @GetMapping
-    @Operation(summary = "List resources", description = "Lists resources the user is allowed to see. Can filter by active status or resource type.")
+    @Operation(summary = "List resources", description = "Lists resources the user is allowed to see. Supports text search across name, description and location, plus optional active-status and resource-type filters.")
     @ApiResponse(responseCode = "200", description = "Resources retrieved")
     public ResponseEntity<List<ResourceResponse>> findAll(
+            @Parameter(description = "Text search across name, description and location (case-insensitive)") @RequestParam(required = false) String search,
             @Parameter(description = "Filter by active status (true/false)") @RequestParam(required = false) Boolean active,
             @Parameter(description = "Filter by resource type ID") @RequestParam(required = false) Integer typeId,
             @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
-        if (Boolean.TRUE.equals(active)) {
-            return ResponseEntity.ok(resourceService.findActive(userDetails));
-        }
-        if (typeId != null) {
-            return ResponseEntity.ok(resourceService.findByType(typeId, userDetails));
-        }
-        return ResponseEntity.ok(resourceService.findAll(userDetails));
+        return ResponseEntity.ok(resourceService.search(search, active, typeId, userDetails));
     }
 
     @GetMapping("/{id}")

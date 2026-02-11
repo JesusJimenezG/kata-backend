@@ -6,7 +6,9 @@ import dev.jesusjimenezg.kata.dto.ResourceTypeResponse;
 import dev.jesusjimenezg.kata.model.Resource;
 import dev.jesusjimenezg.kata.model.ResourceType;
 import dev.jesusjimenezg.kata.repository.ResourceRepository;
+import dev.jesusjimenezg.kata.repository.ResourceSpecification;
 import dev.jesusjimenezg.kata.repository.ResourceTypeRepository;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +53,32 @@ public class ResourceService {
     public List<ResourceResponse> findByType(Integer resourceTypeId, UserDetails userDetails) {
         permissionService.checkAccess(userDetails, resourceTypeId);
         return resourceRepository.findByResourceTypeId(resourceTypeId).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    /**
+     * Unified search: combines optional text search, active filter, and type
+     * filter.
+     * Always constrained by the user's allowed resource types.
+     */
+    @Transactional(readOnly = true)
+    public List<ResourceResponse> search(String query, Boolean active, Integer typeId, UserDetails userDetails) {
+        Set<Integer> allowed = permissionService.getAllowedResourceTypeIds(userDetails);
+
+        Specification<Resource> spec = Specification.where(ResourceSpecification.hasTypeIdIn(allowed));
+
+        if (active != null && active) {
+            spec = spec.and(ResourceSpecification.isActive());
+        }
+        if (typeId != null) {
+            spec = spec.and(ResourceSpecification.hasTypeId(typeId));
+        }
+        if (query != null && !query.isBlank()) {
+            spec = spec.and(ResourceSpecification.searchText(query.strip()));
+        }
+
+        return resourceRepository.findAll(spec).stream()
                 .map(this::toResponse)
                 .toList();
     }
