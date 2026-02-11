@@ -7,11 +7,13 @@ import dev.jesusjimenezg.kata.model.Resource;
 import dev.jesusjimenezg.kata.model.ResourceType;
 import dev.jesusjimenezg.kata.repository.ResourceRepository;
 import dev.jesusjimenezg.kata.repository.ResourceTypeRepository;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -19,38 +21,45 @@ public class ResourceService {
 
     private final ResourceRepository resourceRepository;
     private final ResourceTypeRepository resourceTypeRepository;
+    private final ResourcePermissionService permissionService;
 
     public ResourceService(ResourceRepository resourceRepository,
-            ResourceTypeRepository resourceTypeRepository) {
+            ResourceTypeRepository resourceTypeRepository,
+            ResourcePermissionService permissionService) {
         this.resourceRepository = resourceRepository;
         this.resourceTypeRepository = resourceTypeRepository;
+        this.permissionService = permissionService;
     }
 
     @Transactional(readOnly = true)
-    public List<ResourceResponse> findAll() {
-        return resourceRepository.findAll().stream()
+    public List<ResourceResponse> findAll(UserDetails userDetails) {
+        Set<Integer> allowed = permissionService.getAllowedResourceTypeIds(userDetails);
+        return resourceRepository.findByResourceTypeIdIn(allowed).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<ResourceResponse> findActive() {
-        return resourceRepository.findByActiveTrue().stream()
+    public List<ResourceResponse> findActive(UserDetails userDetails) {
+        Set<Integer> allowed = permissionService.getAllowedResourceTypeIds(userDetails);
+        return resourceRepository.findByActiveTrueAndResourceTypeIdIn(allowed).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<ResourceResponse> findByType(Integer resourceTypeId) {
+    public List<ResourceResponse> findByType(Integer resourceTypeId, UserDetails userDetails) {
+        permissionService.checkAccess(userDetails, resourceTypeId);
         return resourceRepository.findByResourceTypeId(resourceTypeId).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public ResourceResponse findById(UUID id) {
+    public ResourceResponse findById(UUID id, UserDetails userDetails) {
         Resource resource = resourceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Resource not found: " + id));
+        permissionService.checkAccess(userDetails, resource.getResourceType().getId());
         return toResponse(resource);
     }
 

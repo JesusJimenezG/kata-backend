@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -24,13 +25,16 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final ResourceRepository resourceRepository;
     private final AppUserRepository appUserRepository;
+    private final ResourcePermissionService permissionService;
 
     public ReservationService(ReservationRepository reservationRepository,
             ResourceRepository resourceRepository,
-            AppUserRepository appUserRepository) {
+            AppUserRepository appUserRepository,
+            ResourcePermissionService permissionService) {
         this.reservationRepository = reservationRepository;
         this.resourceRepository = resourceRepository;
         this.appUserRepository = appUserRepository;
+        this.permissionService = permissionService;
     }
 
     @Transactional
@@ -48,6 +52,9 @@ public class ReservationService {
         if (!resource.isActive()) {
             throw new IllegalArgumentException("Resource is not active: " + request.resourceId());
         }
+
+        // Role-based permission check for the resource type
+        permissionService.checkAccess(userDetails, resource.getResourceType().getId());
 
         // Check for overlapping active reservations
         if (reservationRepository.existsOverlapping(request.resourceId(), request.startTime(), request.endTime())) {
@@ -69,9 +76,10 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public ReservationResponse findById(UUID id) {
+    public ReservationResponse findById(UUID id, UserDetails userDetails) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Reservation not found: " + id));
+        permissionService.checkAccess(userDetails, reservation.getResource().getResourceType().getId());
         return toResponse(reservation);
     }
 
@@ -79,23 +87,26 @@ public class ReservationService {
     public List<ReservationResponse> findActiveByUser(UserDetails userDetails) {
         AppUser user = appUserRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
-        return reservationRepository.findByUserIdAndStatus(user.getId(), "ACTIVE").stream()
+        Set<Integer> allowed = permissionService.getAllowedResourceTypeIds(userDetails);
+        return reservationRepository.findByUserIdAndStatusAndResourceTypeIdIn(user.getId(), "ACTIVE", allowed)
+                .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<ReservationResponse> findAllActive() {
-        return reservationRepository.findByStatus("ACTIVE").stream()
+    public List<ReservationResponse> findAllActive(UserDetails userDetails) {
+        Set<Integer> allowed = permissionService.getAllowedResourceTypeIds(userDetails);
+        return reservationRepository.findByStatusAndResourceTypeIdIn("ACTIVE", allowed).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<ReservationResponse> findHistoryByResource(UUID resourceId) {
-        if (!resourceRepository.existsById(resourceId)) {
-            throw new IllegalArgumentException("Resource not found: " + resourceId);
-        }
+    public List<ReservationResponse> findHistoryByResource(UUID resourceId, UserDetails userDetails) {
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new IllegalArgumentException("Resource not found: " + resourceId));
+        permissionService.checkAccess(userDetails, resource.getResourceType().getId());
         return reservationRepository.findByResourceIdOrderByStartTimeDesc(resourceId).stream()
                 .map(this::toResponse)
                 .toList();
@@ -105,7 +116,9 @@ public class ReservationService {
     public List<ReservationResponse> findHistoryByUser(UserDetails userDetails) {
         AppUser user = appUserRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found"));
-        return reservationRepository.findByUserIdOrderByStartTimeDesc(user.getId()).stream()
+        Set<Integer> allowed = permissionService.getAllowedResourceTypeIds(userDetails);
+        return reservationRepository.findByUserIdAndResourceTypeIdInOrderByStartTimeDesc(user.getId(), allowed)
+                .stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -145,10 +158,11 @@ public class ReservationService {
      */
     @Transactional(readOnly = true)
     public List<AvailabilitySlot> getAvailability(UUID resourceId, LocalDateTime windowStart,
-            LocalDateTime windowEnd) {
-        if (!resourceRepository.existsById(resourceId)) {
-            throw new IllegalArgumentException("Resource not found: " + resourceId);
-        }
+            LocalDateTime windowEnd, UserDetails userDetails) {
+        Resource resource = resourceRepository.findById(resourceId)
+                .orElseThrow(() -> new IllegalArgumentException("Resource not found: " + resourceId));
+        permissionService.checkAccess(userDetails, resource.getResourceType().getId());
+
         if (!windowEnd.isAfter(windowStart)) {
             throw new IllegalArgumentException("Window end must be after window start");
         }

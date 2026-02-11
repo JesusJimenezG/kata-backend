@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,21 +40,24 @@ public class ResourceTypeController {
     }
 
     @GetMapping
-    @Operation(summary = "List all resource types")
+    @Operation(summary = "List resource types visible to the current user")
     @ApiResponse(responseCode = "200", description = "Resource types retrieved")
-    public ResponseEntity<List<ResourceTypeResponse>> findAll() {
-        return ResponseEntity.ok(resourceTypeService.findAll());
+    public ResponseEntity<List<ResourceTypeResponse>> findAll(
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(resourceTypeService.findAll(userDetails));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get resource type by ID", description = "Returns details of a specific resource type.")
+    @Operation(summary = "Get resource type by ID", description = "Returns details of a specific resource type if the user has permission.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Resource type found", content = @Content(schema = @Schema(implementation = ResourceTypeResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden (insufficient permissions)", content = @Content),
             @ApiResponse(responseCode = "404", description = "Not found", content = @Content)
     })
     public ResponseEntity<ResourceTypeResponse> findById(
-            @Parameter(description = "ID of the resource type", example = "1") @PathVariable Integer id) {
-        return ResponseEntity.ok(resourceTypeService.findById(id));
+            @Parameter(description = "ID of the resource type", example = "1") @PathVariable Integer id,
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(resourceTypeService.findById(id, userDetails));
     }
 
     @PostMapping

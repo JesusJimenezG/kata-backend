@@ -58,21 +58,24 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get reservation by ID", description = "Returns details of a specific reservation.")
+    @Operation(summary = "Get reservation by ID", description = "Returns details of a specific reservation if the user has permission.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Reservation found", content = @Content(schema = @Schema(implementation = ReservationResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden (insufficient permissions)", content = @Content),
             @ApiResponse(responseCode = "404", description = "Not found", content = @Content)
     })
     public ResponseEntity<ReservationResponse> findById(
-            @Parameter(description = "UUID of the reservation") @PathVariable UUID id) {
-        return ResponseEntity.ok(reservationService.findById(id));
+            @Parameter(description = "UUID of the reservation") @PathVariable UUID id,
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(reservationService.findById(id, userDetails));
     }
 
     @GetMapping("/active")
-    @Operation(summary = "List all active reservations")
+    @Operation(summary = "List all active reservations", description = "Filtered by the caller's role-based resource type permissions.")
     @ApiResponse(responseCode = "200", description = "Active reservations retrieved")
-    public ResponseEntity<List<ReservationResponse>> findAllActive() {
-        return ResponseEntity.ok(reservationService.findAllActive());
+    public ResponseEntity<List<ReservationResponse>> findAllActive(
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(reservationService.findAllActive(userDetails));
     }
 
     @GetMapping("/my")
@@ -95,24 +98,28 @@ public class ReservationController {
     @Operation(summary = "Reservation history for a resource")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Resource reservation history retrieved"),
+            @ApiResponse(responseCode = "403", description = "Forbidden (insufficient permissions)", content = @Content),
             @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     public ResponseEntity<List<ReservationResponse>> findResourceHistory(
-            @Parameter(description = "UUID of the resource") @PathVariable UUID resourceId) {
-        return ResponseEntity.ok(reservationService.findHistoryByResource(resourceId));
+            @Parameter(description = "UUID of the resource") @PathVariable UUID resourceId,
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(reservationService.findHistoryByResource(resourceId, userDetails));
     }
 
     @GetMapping("/resource/{resourceId}/availability")
     @Operation(summary = "Get availability slots for a resource", description = "Returns available and reserved time slots within a window")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Availability retrieved"),
+            @ApiResponse(responseCode = "403", description = "Forbidden (insufficient permissions)", content = @Content),
             @ApiResponse(responseCode = "404", description = "Resource not found", content = @Content)
     })
     public ResponseEntity<List<AvailabilitySlot>> getAvailability(
             @Parameter(description = "UUID of the resource") @PathVariable UUID resourceId,
             @Parameter(description = "Start of window (ISO date-time)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @Parameter(description = "End of window (ISO date-time)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-        return ResponseEntity.ok(reservationService.getAvailability(resourceId, start, end));
+            @Parameter(description = "End of window (ISO date-time)") @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(reservationService.getAvailability(resourceId, start, end, userDetails));
     }
 
     @PatchMapping("/{id}/cancel")

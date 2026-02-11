@@ -11,3 +11,4 @@
 - 2026-02-11: Se utilizó IA para generar todo el boilerplate CRUD de Recursos y Reservas (DTOs, Servicios, Controladores).
 - 2026-02-11: Se utilizó la IA para generar el script de migración con datos de prueba (mock data).
 - 2026-02-11: Se utilizó IA para generar el contrato de la API y la colección de Postman para facilitar la integración con clientes.
+- 2026-02-11: Se utilizó IA para implementar permisos avanzados basados en roles, incluyendo la lógica de filtrado tanto a nivel de base de datos como en la capa de servicios y controladores de la aplicación.

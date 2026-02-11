@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,29 +42,32 @@ public class ResourceController {
     }
 
     @GetMapping
-    @Operation(summary = "List resources", description = "Lists all resources. Can filter by active status or resource type.")
+    @Operation(summary = "List resources", description = "Lists resources the user is allowed to see. Can filter by active status or resource type.")
     @ApiResponse(responseCode = "200", description = "Resources retrieved")
     public ResponseEntity<List<ResourceResponse>> findAll(
             @Parameter(description = "Filter by active status (true/false)") @RequestParam(required = false) Boolean active,
-            @Parameter(description = "Filter by resource type ID") @RequestParam(required = false) Integer typeId) {
+            @Parameter(description = "Filter by resource type ID") @RequestParam(required = false) Integer typeId,
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
         if (Boolean.TRUE.equals(active)) {
-            return ResponseEntity.ok(resourceService.findActive());
+            return ResponseEntity.ok(resourceService.findActive(userDetails));
         }
         if (typeId != null) {
-            return ResponseEntity.ok(resourceService.findByType(typeId));
+            return ResponseEntity.ok(resourceService.findByType(typeId, userDetails));
         }
-        return ResponseEntity.ok(resourceService.findAll());
+        return ResponseEntity.ok(resourceService.findAll(userDetails));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get resource by ID", description = "Returns details of a specific resource.")
+    @Operation(summary = "Get resource by ID", description = "Returns details of a specific resource if the user has permission.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Resource found", content = @Content(schema = @Schema(implementation = ResourceResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden (insufficient permissions)", content = @Content),
             @ApiResponse(responseCode = "404", description = "Not found", content = @Content)
     })
     public ResponseEntity<ResourceResponse> findById(
-            @Parameter(description = "UUID of the resource") @PathVariable UUID id) {
-        return ResponseEntity.ok(resourceService.findById(id));
+            @Parameter(description = "UUID of the resource") @PathVariable UUID id,
+            @Parameter(hidden = true) @AuthenticationPrincipal UserDetails userDetails) {
+        return ResponseEntity.ok(resourceService.findById(id, userDetails));
     }
 
     @PostMapping

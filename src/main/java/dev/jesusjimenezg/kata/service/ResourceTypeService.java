@@ -4,29 +4,36 @@ import dev.jesusjimenezg.kata.dto.ResourceTypeRequest;
 import dev.jesusjimenezg.kata.dto.ResourceTypeResponse;
 import dev.jesusjimenezg.kata.model.ResourceType;
 import dev.jesusjimenezg.kata.repository.ResourceTypeRepository;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ResourceTypeService {
 
     private final ResourceTypeRepository resourceTypeRepository;
+    private final ResourcePermissionService permissionService;
 
-    public ResourceTypeService(ResourceTypeRepository resourceTypeRepository) {
+    public ResourceTypeService(ResourceTypeRepository resourceTypeRepository,
+            ResourcePermissionService permissionService) {
         this.resourceTypeRepository = resourceTypeRepository;
+        this.permissionService = permissionService;
     }
 
     @Transactional(readOnly = true)
-    public List<ResourceTypeResponse> findAll() {
-        return resourceTypeRepository.findAll().stream()
+    public List<ResourceTypeResponse> findAll(UserDetails userDetails) {
+        Set<Integer> allowed = permissionService.getAllowedResourceTypeIds(userDetails);
+        return resourceTypeRepository.findByIdIn(allowed).stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public ResourceTypeResponse findById(Integer id) {
+    public ResourceTypeResponse findById(Integer id, UserDetails userDetails) {
+        permissionService.checkAccess(userDetails, id);
         ResourceType rt = resourceTypeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Resource type not found: " + id));
         return toResponse(rt);
